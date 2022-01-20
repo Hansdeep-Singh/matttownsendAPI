@@ -17,7 +17,9 @@ namespace matttownsendAPI
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+               .AddJsonFile("appSettings.json");
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -27,6 +29,18 @@ namespace matttownsendAPI
         {
 
             services.AddControllers();
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                        {
+                            builder.WithOrigins("http://localhost:4200", "http://matttownsendpt.com.au")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                        }
+                    );
+            });
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,11 +51,12 @@ namespace matttownsendAPI
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
